@@ -35,7 +35,7 @@
 
 open class CDMarkdownImage: CDMarkdownLinkElement {
 
-    fileprivate static let regex = "[!{1}]\\[([^\\[]*?)\\]\\(([^\\)]*)\\)"
+    fileprivate static let regex = "[\\!{1}]\\[([^\\[]*?)\\]\\(([^\\)]*)\\)"
 
     open var font: CDFont?
     open var color: CDColor?

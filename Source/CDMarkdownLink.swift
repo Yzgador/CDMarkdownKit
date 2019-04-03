@@ -26,29 +26,29 @@
 //
 
 #if os(iOS) || os(tvOS) || os(watchOS)
-    import UIKit
+import UIKit
 #elseif os(macOS)
-    import Cocoa
+import Cocoa
 #endif
 
 open class CDMarkdownLink: CDMarkdownLinkElement {
-
-    fileprivate static let regex = "[^!{1}]\\[([^\\[]*?)\\]\\(([^\\)]*)\\)"
-
+    
+    fileprivate static let regex = "\\[([^\\[]*?)\\]\\(([^\\)]*)\\)"
+    
     open var font: CDFont?
     open var color: CDColor?
     open var backgroundColor: CDColor?
     open var paragraphStyle: NSParagraphStyle?
-
+    
     open var regex: String {
         return CDMarkdownLink.regex
     }
-
+    
     open func regularExpression() throws -> NSRegularExpression {
         return try NSRegularExpression(pattern: regex,
                                        options: .dotMatchesLineSeparators)
     }
-
+    
     public init(font: CDFont? = nil,
                 color: CDColor? = CDColor.blue,
                 backgroundColor: CDColor? = nil,
@@ -58,7 +58,7 @@ open class CDMarkdownLink: CDMarkdownLinkElement {
         self.backgroundColor = backgroundColor
         self.paragraphStyle = paragraphStyle
     }
-
+    
     open func formatText(_ attributedString: NSMutableAttributedString,
                          range: NSRange,
                          link: String) {
@@ -67,15 +67,15 @@ open class CDMarkdownLink: CDMarkdownLinkElement {
                 return
         }
         guard let url = URL(string: link) ?? URL(string: encodedLink) else { return }
-
+        
         attributedString.addLink(url,
                                  toRange: range)
     }
-
+    
     open func match(_ match: NSTextCheckingResult,
                     attributedString: NSMutableAttributedString) {
         guard match.numberOfRanges == 3 else { return }
-
+        
         let nsString = attributedString.string as NSString
         let linkStartInResult = nsString.range(of: "(",
                                                options: .backwards,
@@ -84,19 +84,19 @@ open class CDMarkdownLink: CDMarkdownLinkElement {
                                 length: match.range.length + match.range.location - linkStartInResult - 1)
         let linkURLString = nsString.substring(with: NSRange(location: linkRange.location + 1,
                                                              length: linkRange.length - 1))
-
+        
         // deleting trailing markdown
         // needs to be called before formattingBlock to support modification of length
         attributedString.deleteCharacters(in: NSRange(location: linkRange.location - 1,
                                                       length: linkRange.length + 2))
-
+        
         // deleting leading markdown
         // needs to be called before formattingBlock to provide a stable range
-        attributedString.deleteCharacters(in: NSRange(location: match.range.location + 1,
+        attributedString.deleteCharacters(in: NSRange(location: match.range.location,
                                                       length: 1))
-        let formatRange = NSRange(location: match.range.location + 1,
-                                  length: linkStartInResult - match.range.location - 3)
-
+        let formatRange = NSRange(location: match.range.location,
+                                  length: linkStartInResult - match.range.location - 2)
+        
         formatText(attributedString,
                    range: formatRange,
                    link: linkURLString)
@@ -104,7 +104,7 @@ open class CDMarkdownLink: CDMarkdownLinkElement {
                       range: formatRange,
                       link: linkURLString)
     }
-
+    
     open func addAttributes(_ attributedString: NSMutableAttributedString,
                             range: NSRange,
                             link: String) {
